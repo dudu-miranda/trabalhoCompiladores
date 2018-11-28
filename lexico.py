@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import io
+import trabalhoCompiladores.io as io
 import re
-from enumTkn import enumTkn
+from trabalhoCompiladores.enumTkn import enumTkn
 
 
 class lexico(object):
@@ -316,6 +316,7 @@ class lexico(object):
 
         #Return para caso de um erro léxico da linguagem
         return -1
+
 
 if __name__ == '__main__':
     teste = lexico("minicteste.c")

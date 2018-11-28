@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from lexico import *
-from enumTkn import enumTkn
-import Controle
+from trabalhoCompiladores.lexico import *
+from trabalhoCompiladores.enumTkn import enumTkn
+from trabalhoCompiladores.Controle import Controle
+from trabalhoCompiladores.Error import ErroSintatico, ErroSemantico
+
 
 class sintatico(object):
     """docstring for sintatico"""
@@ -36,28 +38,23 @@ class sintatico(object):
             self.consome(enumTkn.tkn_float)
         return temp
 
-
     def argList(self):
-        if(self.l.token_atual==enumTkn.tkn_int or self.l.token_atual==enumTkn.tkn_float):
+        if self.l.token_atual==enumTkn.tkn_int or self.l.token_atual==enumTkn.tkn_float:
             self.arg()
             self.restoArg()
-
 
     def arg(self):
         self.type()
         self.consome(enumTkn.tkn_var)
 
-
     def restoArg(self):
         if(self.l.token_atual==enumTkn.tkn_virg):
             self.argList()
-
 
     def bloco(self):
         self.consome(enumTkn.tkn_abreCha)
         self.stmtList()
         self.consome(enumTkn.tkn_fechaCha)
-
 
     def stmtList(self):
         lista = [enumTkn.tkn_not, enumTkn.tkn_abrePar, enumTkn.tkn_add, enumTkn.tkn_sub, enumTkn.tkn_ptVirg,
@@ -67,7 +64,6 @@ class sintatico(object):
         if(self.l.token_atual in lista):
             self.stmt()
             self.stmtList()
-
 
     def stmt(self):
         if(self.l.token_atual in [enumTkn.tkn_in, enumTkn.tkn_out]):
@@ -108,7 +104,6 @@ class sintatico(object):
         else:
             self.consome(enumTkn.tkn_ptVirg)
 
-
     def ioStmt(self):
         if self.l.token_atual == enumTkn.tkn_in:
             self.consome(enumTkn.tkn_in)
@@ -124,7 +119,6 @@ class sintatico(object):
             self.outList()
             self.consome(enumTkn.tkn_fechaPar)
             self.consome(enumTkn.tkn_ptVirg)
-
 
     def outList(self):
         self.out()
@@ -185,10 +179,9 @@ class sintatico(object):
                 print('Erro de atribuicao na ' + 'l:'+str(self.l.linha)+' c:'+str(self.l.coluna))
                 exit()
 
-
     def functionOr(self):
-        a=self.functionAnd()
-        b=self.restoOr()
+        a = self.functionAnd()
+        b = self.restoOr()
 
         return a and b
 
@@ -258,8 +251,8 @@ class sintatico(object):
         return False
 
     def add(self):
-        a=self.mult()
-        b=self.restoAdd()
+        a = self.mult()
+        b = self.restoAdd()
 
         return a and b
 
@@ -276,7 +269,6 @@ class sintatico(object):
             return True
 
         return False    
-
 
     def mult(self):
         a=self.uno()
@@ -306,14 +298,14 @@ class sintatico(object):
         if self.l.token_atual == enumTkn.tkn_add:
             self.consome(enumTkn.tkn_add)
             (left, lista, res) = self.uno()
-            novotemp = geratemp() # geratemporario
+            novotemp = self.controle.geraTemp() # geratemporario
             quad = ("+", novotemp, 0, res)
             novalista = lista + quad
             return (False, novalista, novotemp)
         elif self.l.token_atual == enumTkn.tkn_sub:
             self.consome(enumTkn.tkn_sub)
             (left, lista, res) = self.uno()
-            novotemp = geratemp() # geratemporario
+            novotemp = self.controle.geraTemp()  # geratemporario
             quad = ("-", novotemp, 0, res)
             novalista = lista + quad
             return (False, novalista, novotemp)
@@ -338,8 +330,6 @@ class sintatico(object):
         else:
             self.consome(enumTkn.tkn_numInt)
             return (False, [], self.l.lexema)
-        
-
 
     def ifStmt(self):
         self.consome(enumTkn.tkn_if)
@@ -354,14 +344,12 @@ class sintatico(object):
             self.consome(enumTkn.tkn_else)
             self.stmt()
 
-
     def declaration(self):
         temp1 = self.type()
         temp2 = self.identList()
         for variavel in temp2:
             self.controle.add_simbolo(variavel,temp1)
         self.consome(enumTkn.tkn_ptVirg)
-
 
     def identList(self):
         #Guarda o primeiro identificador
@@ -372,7 +360,6 @@ class sintatico(object):
         lista.extend(self.restoidentList())
         #Retorna a lista 
         return lista
-
 
     def restoidentList(self):
         lista = []
@@ -389,18 +376,15 @@ class sintatico(object):
 
         return lista
 
-    def consome(self,token):
-        
-        print(token)
-        if(token == self.l.token_atual or token==0):
+    def consome(self, token):
+
+        if token == self.l.token_atual or token==0:
             self.l.getToken()
             return 0
 
         lista=['','print','scan',',',';','(',')','=','*','+','-','/','%','||','&&','!',
                 '<','>','<=','>=','!=','==','int','float','{','}','break','continue','for',
                 'numero','numero','while','if','else','identificador','string','eof','return']
-        #print('Era esperado o token %s mas foi recebido o token %s' %(token,self.l.token_atual))
 
-        print('Era esperado o token '+lista[token]+', foi recebido '+str(self.l.lexema)+
-            ' l:'+str(self.l.linha)+' c:'+str(self.l.coluna))
-        exit()
+        msg = ('Era esperado o token ' + lista[token] + ', foi recebido ' + str(self.l.lexema))
+        raise ErroSintatico((self.l.linha, self.l.coluna), msg)

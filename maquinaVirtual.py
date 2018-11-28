@@ -156,6 +156,7 @@ class maquinaVirtual(object):
     def funcJUMP(self,indice,lab1,lab2):
         return self.labels[indice]
 
+
 if __name__ == '__main__':
     arquivo = open("teste", 'r')
     lista = ast.literal_eval(arquivo.read())

@@ -51,6 +51,7 @@ Tabela de saida dos estados dos tokens
 36- EOF
 """
 
+
 class enumTkn(object):
     tkn_in          = 1
     tkn_out         = 2
