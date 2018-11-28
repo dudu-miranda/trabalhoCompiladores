@@ -1,0 +1,1 @@
+[("CALL","SCAN","Entre A","a"),("CALL","SCAN","Entre B","b"),("+","c","a","b"),("/","c","c",2),("CALL","PRINT","Media =","c"), (">","TEMP","a","b"),("IF","TEMP",'maior','menor'),("LABEL",'maior',None,None),("CALL","PRINT","A maior",None),("JUMP","fim",None,None), ("LABEL",'menor',None,None),("CALL","PRINT","B maior",None),("LABEL","fim",None,None),("CALL","STOP",None, None)]
