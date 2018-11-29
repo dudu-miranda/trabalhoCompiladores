@@ -6,12 +6,12 @@ class Controle(object):
 
     def add_simbolo(self, chave, tipo):
         if chave in self.__tabelasimbolo.keys():
-            pass
-            #Chama erro 
+            return False
         else:
-            self.__tabelasimbolo.update({chave:tipo})
+            self.__tabelasimbolo.update({chave: tipo})
+        return True
 
-    def verifica_simbolo(self,chave):
+    def verifica_simbolo(self, chave):
         if chave in self.__tabelasimbolo.keys():
             return True
         else:

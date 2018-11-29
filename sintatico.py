@@ -21,82 +21,137 @@ class sintatico(object):
 
     #Função de iniciar o programa
     def function(self):
+        """
+        # <function*> -> <type> 'IDENT' '(' <argList> ')' <bloco> ;
+        :return:
+        """
+        lista_comandos = []
         self.consome(0)
-        self.type()
+        tipo = self.type()
         self.consome(enumTkn.tkn_var)
         self.consome(enumTkn.tkn_abrePar)
-        self.argList()
+        lista_comandos.extend(self.argList())
         self.consome(enumTkn.tkn_fechaPar)
+
         self.bloco()
 
-
     def type(self):
-        temp = self.l.token_atual
-        if(self.l.token_atual==enumTkn.tkn_int):
+        """
+        Verifica o tipo do token
+        :return: token
+        """
+        tipo = self.l.token_atual
+        if self.l.token_atual == enumTkn.tkn_int:
             self.consome(enumTkn.tkn_int)
         else:
             self.consome(enumTkn.tkn_float)
-        return temp
+        return tipo
 
     def argList(self):
-        if self.l.token_atual==enumTkn.tkn_int or self.l.token_atual==enumTkn.tkn_float:
-            self.arg()
-            self.restoArg()
+        """
+        # <argList> -> <arg> <restoArgList> | & ;
+        :return:
+        """
+        lista_arg = []
+        if self.l.token_atual == enumTkn.tkn_int or self.l.token_atual == enumTkn.tkn_float:
+            lista_arg.append(self.arg())
+            lista_arg.extend(self.restoArg())
+
+        return lista_arg
 
     def arg(self):
-        self.type()
+        """
+        # <arg> -> <type> 'IDENT' ;
+        :return:
+        """
+
+        tipo = self.type()
+        variavel = self.l.lexema
+
         self.consome(enumTkn.tkn_var)
+        if not self.controle.add_simbolo(variavel, tipo):
+            msg = "Variavel redeclarada"
+            raise ErroSintatico((self.l.linha, self.l.coluna), msg)
+        if tipo == enumTkn.tkn_int:
+            atrib = ('=', variavel, 0, None)
+        else:
+            atrib = ('=', variavel, 0.0, None)
+
+        return atrib
 
     def restoArg(self):
-        if(self.l.token_atual==enumTkn.tkn_virg):
-            self.argList()
+        """
+            <restoArgList> -> ',' <argList> | & ;
+        """
+        lista_arg = []
+
+        if self.l.token_atual == enumTkn.tkn_virg:
+            self.consome(enumTkn.tkn_virg)
+            lista_arg = self.argList()
+
+        return lista_arg
 
     def bloco(self):
+        """
+        <bloco> -> '{' <stmtList> '}' ;
+        :return:
+        """
         self.consome(enumTkn.tkn_abreCha)
         self.stmtList()
         self.consome(enumTkn.tkn_fechaCha)
 
     def stmtList(self):
+        """
+        <stmtList> -> <stmt> <stmtList> | & ;
+        :return:
+        """
         lista = [enumTkn.tkn_not, enumTkn.tkn_abrePar, enumTkn.tkn_add, enumTkn.tkn_sub, enumTkn.tkn_ptVirg,
         enumTkn.tkn_var, enumTkn.tkn_float, enumTkn.tkn_int, enumTkn.tkn_break, enumTkn.tkn_continue, enumTkn.tkn_return,
         enumTkn.tkn_numFloat, enumTkn.tkn_numInt, enumTkn.tkn_for, enumTkn.tkn_if, enumTkn.tkn_in, enumTkn.tkn_out,
         enumTkn.tkn_while, enumTkn.tkn_abreCha]
-        if(self.l.token_atual in lista):
+
+        if self.l.token_atual in lista:
             self.stmt()
             self.stmtList()
 
     def stmt(self):
-        if(self.l.token_atual in [enumTkn.tkn_in, enumTkn.tkn_out]):
+        """
+        <stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <expr> ';' | <ifStmt> | <bloco> | 'break' | 'continue'
+                 | <declaration> | ';' ;
+
+        :return:
+        """
+        if self.l.token_atual in [enumTkn.tkn_in, enumTkn.tkn_out]:
             self.ioStmt()
 
-        elif(self.l.token_atual == enumTkn.tkn_for):
+        elif self.l.token_atual == enumTkn.tkn_for:
             self.forStmt()
 
-        elif(self.l.token_atual == enumTkn.tkn_while):
+        elif self.l.token_atual == enumTkn.tkn_while:
             self.whileStmt()
 
         elif(self.l.token_atual in [enumTkn.tkn_not, enumTkn.tkn_abrePar, enumTkn.tkn_add, enumTkn.tkn_sub,
                                     enumTkn.tkn_var, enumTkn.tkn_numFloat, enumTkn.tkn_numInt]):
             self.expr()
 
-        elif(self.l.token_atual == enumTkn.tkn_if):
+        elif self.l.token_atual == enumTkn.tkn_if:
             self.ifStmt()
 
-        elif(self.l.token_atual == enumTkn.tkn_abreCha):
+        elif self.l.token_atual == enumTkn.tkn_abreCha:
             self.bloco()
 
-        elif(self.l.token_atual == enumTkn.tkn_break):
+        elif self.l.token_atual == enumTkn.tkn_break:
             self.consome(enumTkn.tkn_break)
             self.consome(enumTkn.tkn_ptVirg)
 
-        elif(self.l.token_atual == enumTkn.tkn_continue):
+        elif self.l.token_atual == enumTkn.tkn_continue:
             self.consome(enumTkn.tkn_continue)
             self.consome(enumTkn.tkn_ptVirg)
 
-        elif(self.l.token_atual in [enumTkn.tkn_int, enumTkn.tkn_float]):
+        elif self.l.token_atual in [enumTkn.tkn_int, enumTkn.tkn_float]:
             self.declaration()
 
-        elif(self.l.token_atual == enumTkn.tkn_return):
+        elif self.l.token_atual == enumTkn.tkn_return:
             self.consome(enumTkn.tkn_return)
             self.fator()
             self.consome(enumTkn.tkn_ptVirg)
@@ -105,6 +160,10 @@ class sintatico(object):
             self.consome(enumTkn.tkn_ptVirg)
 
     def ioStmt(self):
+        """
+        <ioStmt> -> 'scan' '(' 'IDENT' ')' ';'  | 'print' '(' <outList> ')' ';' ;
+        :return:
+        """
         if self.l.token_atual == enumTkn.tkn_in:
             self.consome(enumTkn.tkn_in)
             self.consome(enumTkn.tkn_abrePar)

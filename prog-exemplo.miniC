@@ -5,7 +5,7 @@
 **==============================
 */  
 
-int main()
+int main(int a, int b) {
 	int num, div, resto;
 	scan("Entre com o inteiro:", num);
 
