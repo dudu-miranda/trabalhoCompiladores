@@ -247,9 +247,9 @@ class lexico(object):
                     self.lexema=string
 
                     if(string=='print'):
-                        self.token_atual = enumTkn.tkn_in
-                    elif(string=='scan'):
                         self.token_atual = enumTkn.tkn_out
+                    elif(string=='scan'):
+                        self.token_atual = enumTkn.tkn_in
                     elif(string=='int'):
                         self.token_atual = enumTkn.tkn_int
                     elif(string=='float'):
