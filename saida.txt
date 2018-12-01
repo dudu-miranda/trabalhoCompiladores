@@ -1,0 +1,1 @@
+[('=', 'num', 0, None), ('=', 'b', 0, None), ('CALL', 'PRINT', 'Entre com o inteiro:', None), ('CALL', 'SCAN', None, 'num'), ('CALL', 'PRINT', 'Fatorando...\\n', None), ('CALL', 'STOP', None, None)]
