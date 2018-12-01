@@ -6,6 +6,7 @@ class Error(Exception):
 
 
 class ErroSintatico(Error):
+
     """
     Exceções levantadas por error sintaticos
     tpl -- tupla com linha e coluna onde ocorreu o erro
@@ -16,7 +17,11 @@ class ErroSintatico(Error):
         self.msg = msg
 
     def __str__(self):
-        erro = "Erro Sintatico: linha %d coluna %d" %(self.tpl[0], self.tpl[1])
+        vermelho = '\033[31m'
+        original = '\033[0;0m'
+        amarelo = '\033[33m'
+        erro = vermelho + "Erro Sintatico:"
+        erro += original + " linha %d coluna %d" %(self.tpl[0], self.tpl[1])
         erro += '\n'
         erro += self.msg
         return erro
@@ -33,7 +38,10 @@ class ErroSemantico(Error):
         self.msg = msg
 
     def __str__(self):
-        erro = "Erro Semantico: linha %d coluna %d" %(self.tpl[0], self.tpl[1])
+        vermelho = '\033[31m'
+        original = '\033[0;0m'
+        erro = vermelho + "Erro Semantico: "
+        erro += original + "linha %d coluna %d" %(self.tpl[0], self.tpl[1])
         erro += '\n'
         erro += self.msg
         return erro

@@ -6,12 +6,13 @@
 */  
 
 int main(int num, int b) {
-	//int num, div, resto;
+
+	int div, resto;
 	
 	scan("Entre com o inteiro:", num);
 
-	print("Fatorando...\n",b,"ota string",1,1.2);
-	//print(num, " = ");
+	print("Fatorando...\n",b,"ota string",1,1.2,div);
+	print(num, " = ");
 
     /* procura e imprime os fatores
     while (num > 1) {

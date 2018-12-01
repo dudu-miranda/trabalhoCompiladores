@@ -18,7 +18,6 @@ class sintatico(object):
         self.controle = Controle()
         self.function()
 
-
     #Função de iniciar o programa
     def function(self):
         """
@@ -152,7 +151,7 @@ class sintatico(object):
             self.ifStmt()
 
         elif self.l.token_atual == enumTkn.tkn_abreCha:
-            return self.bloco()
+            lista.extend(self.bloco())
 
         elif self.l.token_atual == enumTkn.tkn_break:
             self.consome(enumTkn.tkn_break)
@@ -163,7 +162,7 @@ class sintatico(object):
             self.consome(enumTkn.tkn_ptVirg)
 
         elif self.l.token_atual in [enumTkn.tkn_int, enumTkn.tkn_float]:
-            self.declaration()
+            lista.extend(self.declaration())
 
         elif self.l.token_atual == enumTkn.tkn_return:
             self.consome(enumTkn.tkn_return)
@@ -186,16 +185,17 @@ class sintatico(object):
             self.consome(enumTkn.tkn_in)
             self.consome(enumTkn.tkn_abrePar)
             string = self.l.lexema
-            listaCmd.append(('CALL','PRINT',string,None))
+            listaCmd.append(('CALL', 'PRINT', string, None))
             self.consome(enumTkn.tkn_str)
             self.consome(enumTkn.tkn_virg)
             
             variavelEntrada = self.l.lexema
-            if(not self.controle.verifica_simbolo(variavelEntrada)):
-                #Chamar erro aqui ze
-                print('Erro variavel inexistente.')
-                exit()
-            listaCmd.append(('CALL','SCAN',None,variavelEntrada))
+
+            if not self.controle.verifica_simbolo(variavelEntrada):
+                msg = "Variavel %s não foi declarada." %variavelEntrada
+                raise ErroSintatico((self.l.linha, self.l.coluna), msg)
+
+            listaCmd.append(('CALL', 'SCAN', None, variavelEntrada))
             self.consome(enumTkn.tkn_var)
             self.consome(enumTkn.tkn_fechaPar)
             self.consome(enumTkn.tkn_ptVirg)
@@ -233,6 +233,11 @@ class sintatico(object):
             self.consome(enumTkn.tkn_numFloat)
         else:
             self.consome(enumTkn.tkn_var)
+
+            if not self.controle.verifica_simbolo(coisaPraPrintar):
+                msg = "Variavel %s não foi declarada." %coisaPraPrintar
+                raise ErroSintatico((self.l.linha, self.l.coluna), msg)
+            
             return ('CALL','PRINT',None,coisaPraPrintar)
 
         return ('CALL','PRINT',coisaPraPrintar,None)
@@ -455,15 +460,29 @@ class sintatico(object):
             self.stmt()
 
     def declaration(self):
-        temp1 = self.type()
+        tipo = self.type()
         temp2 = self.identList()
+        lista = []
+
         for variavel in temp2:
-            self.controle.add_simbolo(variavel,temp1)
+
+            if not self.controle.add_simbolo(variavel, tipo):
+                msg = "Variavel "+variavel+" redeclarada"
+                raise ErroSintatico((self.l.linha, self.l.coluna), msg)
+            if tipo == enumTkn.tkn_int:
+                atrib = ('=', variavel, 0, None)
+            else:
+                atrib = ('=', variavel, 0.0, None)
+                
+            lista.append(atrib)
+
         self.consome(enumTkn.tkn_ptVirg)
+
+        return lista
 
     def identList(self):
         #Guarda o primeiro identificador
-        lista = [self.l.token_atual]
+        lista = [self.l.lexema]
         #Consome uma variavel
         self.consome(enumTkn.tkn_var)
         #Da um extend na lista que sera recebido da recursão
@@ -477,8 +496,8 @@ class sintatico(object):
         if self.l.token_atual == enumTkn.tkn_virg :
             #Consome a virgula
             self.consome(enumTkn.tkn_virg)
-            #Da um append na lista atual com o token atual
-            lista.append(self.l.token_atual)
+            #Da um append na lista atual com o nome da variavel atual
+            lista.append(self.l.lexema)
             #Consome um token IDENT
             self.consome(enumTkn.tkn_var)
             #Da um extend da proxima recursão da lista que retornará outra lista nem que seja vazia
