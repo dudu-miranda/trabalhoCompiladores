@@ -232,8 +232,8 @@ class sintatico(object):
         elif self.l.token_atual == enumTkn.tkn_numFloat:
             self.consome(enumTkn.tkn_numFloat)
         else:
-            return ('CALL','PRINT',None,coisaPraPrintar)
             self.consome(enumTkn.tkn_var)
+            return ('CALL','PRINT',None,coisaPraPrintar)
 
         return ('CALL','PRINT',coisaPraPrintar,None)
 
