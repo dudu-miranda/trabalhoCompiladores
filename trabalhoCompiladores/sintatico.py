@@ -18,7 +18,6 @@ class sintatico(object):
         self.controle = Controle()
         self.function()
 
-
     #Função de iniciar o programa
     def function(self):
         """
@@ -186,16 +185,17 @@ class sintatico(object):
             self.consome(enumTkn.tkn_in)
             self.consome(enumTkn.tkn_abrePar)
             string = self.l.lexema
-            listaCmd.append(('CALL','PRINT',string,None))
+            listaCmd.append(('CALL', 'PRINT', string, None))
             self.consome(enumTkn.tkn_str)
             self.consome(enumTkn.tkn_virg)
             
             variavelEntrada = self.l.lexema
-            if(not self.controle.verifica_simbolo(variavelEntrada)):
-                #Chamar erro aqui ze
-                print('Erro variavel inexistente.')
-                exit()
-            listaCmd.append(('CALL','SCAN',None,variavelEntrada))
+
+            if not self.controle.verifica_simbolo(variavelEntrada):
+                msg = "Variavel %s não foi declarada." %variavelEntrada
+                raise ErroSintatico((self.l.linha, self.l.coluna), msg)
+
+            listaCmd.append(('CALL', 'SCAN', None, variavelEntrada))
             self.consome(enumTkn.tkn_var)
             self.consome(enumTkn.tkn_fechaPar)
             self.consome(enumTkn.tkn_ptVirg)
@@ -232,8 +232,9 @@ class sintatico(object):
         elif self.l.token_atual == enumTkn.tkn_numFloat:
             self.consome(enumTkn.tkn_numFloat)
         else:
-            return ('CALL','PRINT',None,coisaPraPrintar)
             self.consome(enumTkn.tkn_var)
+            return ('CALL','PRINT',None,coisaPraPrintar)
+
 
         return ('CALL','PRINT',coisaPraPrintar,None)
 
