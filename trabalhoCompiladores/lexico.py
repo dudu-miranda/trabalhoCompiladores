@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import trabalhoCompiladores.io as io
+import trabalhoCompiladores.entradasaida as entradasaida
 import re
 from trabalhoCompiladores.enumTkn import enumTkn
 
@@ -26,7 +26,7 @@ class lexico(object):
         #Variavel que contem o token atual
         self.token_atual = 0
         #Variavel que manterá uma instancia do objeto de entrada e saida
-        self.arquivo = io.IO(file, self)
+        self.arquivo = entradasaida.IO(file, self)
         #Variavel que guardará a coluna
         self.__col = 1
         #Variavel que guardará a linha

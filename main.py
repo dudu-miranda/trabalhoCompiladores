@@ -3,7 +3,6 @@
 from trabalhoCompiladores.Error import ErroSintatico, ErroSemantico
 from trabalhoCompiladores.sintatico import sintatico
 
-
 try:
     sint=sintatico('prog-exemplo.miniC')
 except ErroSintatico as e:
