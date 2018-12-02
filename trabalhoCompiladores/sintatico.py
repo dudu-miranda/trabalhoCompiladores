@@ -138,7 +138,7 @@ class sintatico(object):
             lista.extend(self.ioStmt())
 
         elif self.l.token_atual == enumTkn.tkn_for:
-            self.forStmt()
+            lista.extend(self.forStmt())
 
         elif self.l.token_atual == enumTkn.tkn_while:
             lista.extend(self.whileStmt())
@@ -261,20 +261,55 @@ class sintatico(object):
         return lista
 
     def forStmt(self):
+        """
+        <forStmt> -> 'for' '(' <optExpr> ';' <optExpr> ';' <optExpr> ')' <stmt> ;
+        :return:
+        """
+
+        lista = []
+        labelexp = self.controle.geraLabel()
+        labelinicio = self.controle.geraLabel()
+        labelfim = self.controle.geraLabel()
+
         self.consome(enumTkn.tkn_for)
         self.consome(enumTkn.tkn_abrePar)
-        self.optexpr()
+        listaopr, variavelR = self.optexpr()
+        lista.extend(listaopr)
+
         self.consome(enumTkn.tkn_ptVirg)
-        self.optexpr()
+
+        # calculo da expressao
+        lista.append(('LABEL', labelexp, None, None))
+        listaopr, variavelR = self.optexpr()
+        lista.extend(listaopr) # calculo de fato adicionado ao comando
+        lista.append(("IF", variavelR, labelinicio, labelfim))
         self.consome(enumTkn.tkn_ptVirg)
-        self.optexpr()
+
+        # a operacao e feita ao final do stmt
+        listaINC, variavelR = self.optexpr()
         self.consome(enumTkn.tkn_fechaPar)
-        self.stmt()
+
+        lista.append(('LABEL', labelinicio, None, None))
+        lista.extend(self.stmt())
+
+        lista.extend(listaINC)     # adicionando o calculo do incremento
+
+        lista.append(('JUMP', labelexp, None, None))    # volta verificacao
+        lista.append(('LABEL', labelfim, None, None))   # label de final
+        return lista
 
     def optexpr(self):
+        """
+        <optExpr> -> <expr> | & ;
+        :return:
+        """
+        listaopr = []
+        variavelresult = None
         if self.l.token_atual in [enumTkn.tkn_not, enumTkn.tkn_abrePar, enumTkn.tkn_add, enumTkn.tkn_sub,
                                     enumTkn.tkn_var, enumTkn.tkn_numFloat, enumTkn.tkn_numInt]:
-            self.expr()
+            listaopr, variavelresult = self.expr()
+
+        return listaopr, variavelresult
 
     def whileStmt(self):
         self.consome(enumTkn.tkn_while)
@@ -293,30 +328,30 @@ class sintatico(object):
         lista.extend(listaExpressao)
         
         #Faz um if pra primeira vez que caso a expressao seja falsa ele vai para a saida caso contrario ele continua no codigo do bloco
-        lista.append(("IF",res,labelAposExpressao,labelSaida))
+        lista.append(("IF", res, labelAposExpressao,labelSaida))
         #Coloca o label do pos expressao
-        lista.append(('LABEL',labelAposExpressao,None,None))
+        lista.append(('LABEL', labelAposExpressao,None,None))
 
         self.consome(enumTkn.tkn_fechaPar)
 
         #Chama um stmt passando os labels de saida e de expressao para caso seja um break ou continue
-        lista.extend(self.stmt(labelExpressao,labelSaida))
+        lista.extend(self.stmt(labelExpressao, labelSaida))
 
         #Manda lá pra cima para ser calculada a expressao novamente para decidir se vai ou nao sair do laço
-        lista.append(('JUMP',labelExpressao,None,None))
+        lista.append(('JUMP', labelExpressao, None, None))
 
         #Adiciona o label de saida do laço
-        lista.append(('LABEL',labelSaida,None,None))
+        lista.append(('LABEL', labelSaida, None, None))
 
         return lista
 
     def expr(self):
         lista = []
         self.atrib()
-        return lista , 'VariavelAleatoria'
+        return lista, 'VariavelAleatoriaderesultado'
 
     def atrib(self):
-        a=self.functionOr()
+        a = self.functionOr()
         self.restoAtrib(a)
 
     def restoAtrib(self,bulian):

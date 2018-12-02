@@ -30,8 +30,7 @@
 <restoIdentList> -> ',' 'IDENT' <restoIdentList> | & ;
 
 # comando for
-<forStmt> -> 'for' '(' <optExpr> ';' 
-              <optExpr> ';' <optExpr> ')' <stmt> ;
+<forStmt> -> 'for' '(' <optExpr> ';' <optExpr> ';' <optExpr> ')' <stmt> ;
 <optExpr> -> <expr> | & ;
 # comandos de IO
 <ioStmt> -> 'scan' '(' 'IDENT' ')' ';' 
