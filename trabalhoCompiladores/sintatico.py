@@ -96,19 +96,19 @@ class sintatico(object):
 
         return lista_arg
 
-    def bloco(self):
+    def bloco(self,labelContinue=None,labelBreak=None):
         """
         <bloco> -> '{' <stmtList> '}' ;
         :return:
         """
         lista = []
         self.consome(enumTkn.tkn_abreCha)
-        lista.extend(self.stmtList())
+        lista.extend(self.stmtList(labelContinue,labelBreak))
         self.consome(enumTkn.tkn_fechaCha)
 
         return lista
 
-    def stmtList(self):
+    def stmtList(self,labelContinue=None,labelBreak=None):
         """
         <stmtList> -> <stmt> <stmtList> | & ;
         :return:
@@ -121,12 +121,12 @@ class sintatico(object):
         enumTkn.tkn_while, enumTkn.tkn_abreCha]
 
         if self.l.token_atual in lista:
-            listaDeBlocos.extend(self.stmt())
-            listaDeBlocos.extend(self.stmtList())
+            listaDeBlocos.extend(self.stmt(labelContinue,labelBreak))
+            listaDeBlocos.extend(self.stmtList(labelContinue,labelBreak))
 
         return listaDeBlocos
 
-    def stmt(self):
+    def stmt(self,labelContinue=None,labelBreak=None):
         """
         <stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <expr> ';' | <ifStmt> | <bloco> | 'break' | 'continue'
                  | <declaration> | ';' ;
@@ -141,25 +141,30 @@ class sintatico(object):
             self.forStmt()
 
         elif self.l.token_atual == enumTkn.tkn_while:
-            self.whileStmt()
+            lista.extend(self.whileStmt())
 
         elif(self.l.token_atual in [enumTkn.tkn_not, enumTkn.tkn_abrePar, enumTkn.tkn_add, enumTkn.tkn_sub,
                                     enumTkn.tkn_var, enumTkn.tkn_numFloat, enumTkn.tkn_numInt]):
-            self.expr()
+            lst, var = self.expr()
+            lista.extend(lst)
 
         elif self.l.token_atual == enumTkn.tkn_if:
             self.ifStmt()
 
         elif self.l.token_atual == enumTkn.tkn_abreCha:
-            lista.extend(self.bloco())
+            lista.extend(self.bloco(labelContinue,labelBreak))
 
         elif self.l.token_atual == enumTkn.tkn_break:
             self.consome(enumTkn.tkn_break)
             self.consome(enumTkn.tkn_ptVirg)
 
+            lista.append(('JUMP',labelBreak,None,None))
+
         elif self.l.token_atual == enumTkn.tkn_continue:
             self.consome(enumTkn.tkn_continue)
             self.consome(enumTkn.tkn_ptVirg)
+
+            lista.append(('JUMP',labelContinue,None,None))
 
         elif self.l.token_atual in [enumTkn.tkn_int, enumTkn.tkn_float]:
             lista.extend(self.declaration())
@@ -274,12 +279,41 @@ class sintatico(object):
     def whileStmt(self):
         self.consome(enumTkn.tkn_while)
         self.consome(enumTkn.tkn_abrePar)
-        self.expr()
+
+        labelExpressao = self.controle.geraLabel()
+        labelAposExpressao = self.controle.geraLabel()
+        labelSaida = self.controle.geraLabel()
+
+        lista = []
+        #Coloca o label do calculo da expressao
+        lista.append(('LABEL',labelExpressao,None,None))
+
+        #Pega o codigo que calcula a expressao de saida do while pela primeira vez
+        listaExpressao,res = self.expr()
+        lista.extend(listaExpressao)
+        
+        #Faz um if pra primeira vez que caso a expressao seja falsa ele vai para a saida caso contrario ele continua no codigo do bloco
+        lista.append(("IF",res,labelAposExpressao,labelSaida))
+        #Coloca o label do pos expressao
+        lista.append(('LABEL',labelAposExpressao,None,None))
+
         self.consome(enumTkn.tkn_fechaPar)
-        self.stmt()
+
+        #Chama um stmt passando os labels de saida e de expressao para caso seja um break ou continue
+        lista.extend(self.stmt(labelExpressao,labelSaida))
+
+        #Manda lá pra cima para ser calculada a expressao novamente para decidir se vai ou nao sair do laço
+        lista.append(('JUMP',labelExpressao,None,None))
+
+        #Adiciona o label de saida do laço
+        lista.append(('LABEL',labelSaida,None,None))
+
+        return lista
 
     def expr(self):
+        lista = []
         self.atrib()
+        return lista , 'VariavelAleatoria'
 
     def atrib(self):
         a=self.functionOr()
@@ -473,7 +507,7 @@ class sintatico(object):
                 atrib = ('=', variavel, 0, None)
             else:
                 atrib = ('=', variavel, 0.0, None)
-                
+
             lista.append(atrib)
 
         self.consome(enumTkn.tkn_ptVirg)

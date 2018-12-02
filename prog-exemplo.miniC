@@ -9,21 +9,28 @@ int main(int num, int b) {
 
 	int div, resto;
 	
-	scan("Entre com o inteiro:", num);
+	//scan("Entre com o inteiro:", num);
+	//print("Fatorando...\n",b,"ota string",1,1.2,div);
 
-	print("Fatorando...\n",b,"ota string",1,1.2,div);
-	print(num, " = ");
-
-    /* procura e imprime os fatores
+    //procura e imprime os fatores
     while (num > 1) {
         // encontra o menor fator
-	    for (div = 2; num % div; div = div + 1);
+	    //for (div = 2; num % div; div = div + 1);
 
 	    print(div);
-	    num = num / div;
-	    if (num > 1)
-	       print(" * ");
+
+	    break;
+
+	    print(div);
+
+	    //num = num / div;
+	    //if (num > 1)
+	       //print(" * ");
+
+	    continue;
+
+	    print(div);
 	} 
-	*/
+	
 	return 0;
 } 
