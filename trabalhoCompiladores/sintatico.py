@@ -346,100 +346,162 @@ class sintatico(object):
         return lista
 
     def expr(self):
-        lista = []
-        self.atrib()
-        return lista, 'VariavelAleatoriaderesultado'
+        """
+        <expr> -> <atrib> ;
+        :return:
+        """
+        listaComandos, resultado = self.atrib()
+        if listaComandos is None:
+            listaComandos = []
+
+        return listaComandos, resultado
 
     def atrib(self):
-        a = self.functionOr()
-        self.restoAtrib(a)
+        """
+        <atrib> -> <or> <restoAtrib> ;
+        :return:
+        """
+        leftValue, listaComandos, resultado = self.functionOr()
+        leftValueb, listaComandosb, resultadob = self.restoAtrib(leftValue)
+        if resultadob is not None:
+            listaComandos.extend(listaComandosb)
+            listaComandos.append('=', resultado, resultadob, None)
 
-    def restoAtrib(self,bulian):
+        return listaComandos, resultado
+
+    def restoAtrib(self, bulian):
+        """
+        <restoAtrib> -> '=' <atrib> | & ;
+        :param bulian:
+        :return:
+        """
         if self.l.token_atual == enumTkn.tkn_atrib:
             if bulian:            
                 self.consome(enumTkn.tkn_atrib)
-                self.atrib()
+                return self.atrib()
             else:
-                print('Erro de atribuicao na ' + 'l:'+str(self.l.linha)+' c:'+str(self.l.coluna))
-                exit()
+                msg = "Não é possivel realizar esta operação de atribuição."
+                raise ErroSintatico((self.l.linha, self.l.coluna), msg)
+        else:
+            return bulian, [], None
 
     def functionOr(self):
-        a = self.functionAnd()
-        b = self.restoOr()
+        """
+        <or> -> <and> <restoOr> ;
+        :return:
+        """
+        leftValue, listaComandos, resultado = self.functionAnd()
+        leftValueb, listaComandosb, resultadob = self.restoOr(resultado)
+        listaComandos.extend(listaComandosb)
+        return leftValue and leftValueb, listaComandos, resultadob
 
-        return a and b
-
-    def restoOr(self):
+    def restoOr(self, resultant):
+        """
+        <restoOr> -> '||' <and> <restoOr> | & ;
+        :return:
+        """
         if self.l.token_atual == enumTkn.tkn_or:
+            opr = self.l.lexema
             self.consome(enumTkn.tkn_or)
-            self.functionAnd()
-            self.restoOr()
-        else:
-            return True
+            leftValue, listaComandos, resultado = self.functionAnd()
 
-        return False
+            novotemp = self.controle.geraTemp() # ficara o resultado do or
+
+            listaComandos.append((opr, novotemp, resultado, resultant))
+            leftValueb, listaComandosb, resultadob = self.restoOr(novotemp)
+            listaComandos.extend(listaComandosb)
+
+            return False, listaComandos, resultadob
+        else:
+            return True, [], resultant
 
     def functionAnd(self):
-        a=self.functionNot()
-        b=self.restoAnd()
+        leftValue, listaComandos, resultado = self.functionNot()
+        leftValueb, listaComandosb, resultadob = self.restoAnd(resultado)
+        listaComandos.extend(listaComandosb)
+        return leftValue and leftValueb, listaComandos, resultadob
 
-        return a and b
-
-    def restoAnd(self):
+    def restoAnd(self, resultant):
         if self.l.token_atual == enumTkn.tkn_and:
+            opr = self.l.lexema
             self.consome(enumTkn.tkn_and)
-            self.functionNot()
-            self.restoAnd()
-        else:
-            return True
+            leftValue, listaComandos, resultado = self.functionNot()
 
-        return False
+            novotemp = self.controle.geraTemp()  # ficara o resultado do or
+            listaComandos.append((opr, novotemp, resultado, resultant))
+            leftValueb, listaComandosb, resultadob = self.restoAnd(novotemp)
+            listaComandos.extend(listaComandosb)
+
+            return False, listaComandos, resultadob
+        else:
+            return True, [], resultant
 
     def functionNot(self):
+        """
+        <not> -> '!' <not> | <rel> ;
+        :return:
+        """
+
         if self.l.token_atual == enumTkn.tkn_not:
+            opr = self.l.lexema
             self.consome(enumTkn.tkn_not)
-            self.functionNot()
+            leftValue, listaComandos, resultado = self.functionNot()
+            novotemp = self.controle.geraTemp()
+            listaComandos.append((opr, novotemp, resultado, None))
+            return False, listaComandos, novotemp
         else:
             return self.rel()
 
-        return False
-
     def rel(self):
-        a=self.add()
-        b=self.restorel()
+        """
+        <rel> -> <add> <restoRel> ;
+        :return:
+        """
+        leftValue, listaComandos, resultado = self.add()
+        leftValueb, listaComandosb, resultadob = self.restorel(resultado)
+        listaComandos.extend(listaComandosb)
+        return leftValue and leftValueb, listaComandos, resultadob
 
-        return a and b
-
-    def restorel(self):
+    def restorel(self, resultadoAnt):
+        """
+        <restoRel> -> '==' <add> | '!=' <add>
+            | '<' <add> | '<=' <add>
+            | '>' <add> | '>=' <add> | & ;
+        :param resultado: resultado da operacao anterior
+        :return:
+        """
+        comparacao = self.l.lexema
         if self.l.token_atual == enumTkn.tkn_igualdade:
             self.consome(enumTkn.tkn_igualdade)
-            self.add()
+            leftValue, listaComandos, resultado = self.add()
         elif self.l.token_atual == enumTkn.tkn_diferenca:
             self.consome(enumTkn.tkn_diferenca)
-            self.add()
+            leftValue, listaComandos, resultado = self.add()
         elif self.l.token_atual == enumTkn.tkn_menorQ:
             self.consome(enumTkn.tkn_menorQ)
-            self.add()
+            leftValue, listaComandos, resultado = self.add()
         elif self.l.token_atual == enumTkn.tkn_maiorQ:
             self.consome(enumTkn.tkn_maiorQ)
-            self.add()
+            leftValue, listaComandos, resultado = self.add()
         elif self.l.token_atual == enumTkn.tkn_maiorI:
             self.consome(enumTkn.tkn_maiorI)
-            self.add()
+            leftValue, listaComandos, resultado = self.add()
         elif self.l.token_atual == enumTkn.tkn_menorI:
             self.consome(enumTkn.tkn_menorI)
-            self.add()
+            leftValue, listaComandos, resultado = self.add()
         else:
-            return True
-
-        return False
+            return True, [], resultadoAnt  # retorna o propio resultado anterior
+        novotemp = self.controle.geraTemp()   # guardara o resultado da operacao
+        listaComandos.append((comparacao, novotemp, resultadoAnt, resultado))
+        return False, listaComandos, novotemp
 
     def add(self):
-        a = self.mult()
-        b = self.restoAdd()
+        leftValue, listaComandos, resultado = self.mult()
+        leftValueb = self.restoAdd()
+        return leftValue and leftValueb, listaComandos, resultado
 
-        return a and b
 
+    # falta so daqui pra baixo
     def restoAdd(self):
         if self.l.token_atual == enumTkn.tkn_add:
             self.consome(enumTkn.tkn_add)
@@ -455,10 +517,10 @@ class sintatico(object):
         return False    
 
     def mult(self):
-        a=self.uno()
-        b=self.restoMult()
+        leftValue, listaComandos, resultado = self.uno()
+        leftValueb = self.restoMult()
 
-        return a and b
+        return leftValue and leftValueb, listaComandos, resultado
 
     def restoMult(self):
         if self.l.token_atual == enumTkn.tkn_mult:
