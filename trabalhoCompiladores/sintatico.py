@@ -147,22 +147,21 @@ class sintatico(object):
                                     enumTkn.tkn_var, enumTkn.tkn_numFloat, enumTkn.tkn_numInt]):
             lst, var = self.expr()
             lista.extend(lst)
+            self.consome(enumTkn.tkn_ptVirg)
 
         elif self.l.token_atual == enumTkn.tkn_if:
-            self.ifStmt()
+            lista.extend(self.ifStmt())
 
         elif self.l.token_atual == enumTkn.tkn_abreCha:
             lista.extend(self.bloco(labelContinue,labelBreak))
 
         elif self.l.token_atual == enumTkn.tkn_break:
             self.consome(enumTkn.tkn_break)
-            self.consome(enumTkn.tkn_ptVirg)
 
             lista.append(('JUMP',labelBreak,None,None))
 
         elif self.l.token_atual == enumTkn.tkn_continue:
             self.consome(enumTkn.tkn_continue)
-            self.consome(enumTkn.tkn_ptVirg)
 
             lista.append(('JUMP',labelContinue,None,None))
 
@@ -588,7 +587,7 @@ class sintatico(object):
             (left, lista, res) = self.uno()
             novotemp = self.controle.geraTemp() # geratemporario
             quad = ("+", novotemp, 0, res)
-            novalista = lista + quad
+            novalista = lista + [quad]
             return (False, novalista, novotemp)
 
         elif self.l.token_atual == enumTkn.tkn_sub:
@@ -596,7 +595,7 @@ class sintatico(object):
             (left, lista, res) = self.uno()
             novotemp = self.controle.geraTemp()  # geratemporario
             quad = ("-", novotemp, 0, res)
-            novalista = lista + quad
+            novalista = lista + [quad]
             return (False, novalista, novotemp)
         else:
             return self.fator()
@@ -623,17 +622,41 @@ class sintatico(object):
             return (False, [], atual)
 
     def ifStmt(self):
+
+        lista = []
+
         self.consome(enumTkn.tkn_if)
         self.consome(enumTkn.tkn_abrePar)
-        self.expr()
+        
+        lstExpr, result = self.expr()
+        
         self.consome(enumTkn.tkn_fechaPar)
-        self.stmt()
-        self.elsepart()
+
+        vdd = self.controle.geraLabel()
+        labelAposExpressao = self.controle.geraLabel()
+        falsidade = self.controle.geraLabel()
+
+        blocoIF = self.stmt()
+        blocoElse = self.elsepart()
+
+        lista.extend(lstExpr)
+        lista.append(("IF",result,labelAposExpressao,falsidade))
+        lista.append(("LABEL",labelAposExpressao,None,None))
+        lista.extend(blocoIF)
+        lista.append(("JUMP",vdd,None,None))
+        lista.append(("LABEL",falsidade,None,None))
+        lista.extend(blocoElse)
+        lista.append(("LABEL",vdd,None,None))
+
+        return lista
 
     def elsepart(self):
+        lista = []
         if self.l.token_atual == enumTkn.tkn_else:
             self.consome(enumTkn.tkn_else)
-            self.stmt()
+            lista.extend(self.stmt())
+
+        return lista
 
     def declaration(self):
         tipo = self.type()

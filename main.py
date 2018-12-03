@@ -4,7 +4,7 @@ from trabalhoCompiladores.Error import ErroSintatico, ErroSemantico
 from trabalhoCompiladores.sintatico import sintatico
 
 try:
-    sint=sintatico('prog-exemplo.miniC')
+    sint=sintatico('prog1.c')
 except ErroSintatico as e:
     print(e)
 
