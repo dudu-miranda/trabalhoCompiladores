@@ -350,7 +350,7 @@ class sintatico(object):
         <expr> -> <atrib> ;
         :return:
         """
-        listaComandos, resultado = self.atrib()
+        left, listaComandos, resultado = self.atrib()
         if listaComandos is None:
             listaComandos = []
 
@@ -365,9 +365,9 @@ class sintatico(object):
         leftValueb, listaComandosb, resultadob = self.restoAtrib(leftValue)
         if resultadob is not None:
             listaComandos.extend(listaComandosb)
-            listaComandos.append('=', resultado, resultadob, None)
+            listaComandos.append(('=', resultado, resultadob, None))
 
-        return listaComandos, resultado
+        return leftValue and leftValueb, listaComandos, resultado
 
     def restoAtrib(self, bulian):
         """
@@ -422,13 +422,19 @@ class sintatico(object):
         return leftValue and leftValueb, listaComandos, resultadob
 
     def restoAnd(self, resultant):
+        """
+        <restoAnd> -> '&&' <not> <restoAnd> | & ;
+        :param resultant:
+        :return:
+        """
         if self.l.token_atual == enumTkn.tkn_and:
             opr = self.l.lexema
             self.consome(enumTkn.tkn_and)
             leftValue, listaComandos, resultado = self.functionNot()
 
-            novotemp = self.controle.geraTemp()  # ficara o resultado do or
-            listaComandos.append((opr, novotemp, resultado, resultant))
+            novotemp = self.controle.geraTemp()  # ficara o resultado do amd
+            listaComandos.append((opr, novotemp, resultant, resultado))
+
             leftValueb, listaComandosb, resultadob = self.restoAnd(novotemp)
             listaComandos.extend(listaComandosb)
 
@@ -491,54 +497,90 @@ class sintatico(object):
             leftValue, listaComandos, resultado = self.add()
         else:
             return True, [], resultadoAnt  # retorna o propio resultado anterior
+
         novotemp = self.controle.geraTemp()   # guardara o resultado da operacao
         listaComandos.append((comparacao, novotemp, resultadoAnt, resultado))
         return False, listaComandos, novotemp
 
     def add(self):
+        """
+        <add> -> <mult> <restoAdd> ;
+        :return:
+        """
         leftValue, listaComandos, resultado = self.mult()
-        leftValueb = self.restoAdd()
-        return leftValue and leftValueb, listaComandos, resultado
+        leftValueb, listaComandosb, resultadob = self.restoAdd(resultado)
+        listaComandos.extend(listaComandosb)
+        return leftValue and leftValueb, listaComandos, resultadob
 
 
     # falta so daqui pra baixo
-    def restoAdd(self):
+    def restoAdd(self, resultant):
+        """
+        <restoAdd> -> '+' <mult> <restoAdd>
+            | '-' <mult> <restoAdd> | & ;
+        :param resultant:
+        :return:
+        """
         if self.l.token_atual == enumTkn.tkn_add:
+            opr = self.l.lexema
             self.consome(enumTkn.tkn_add)
-            self.mult()
-            self.restoAdd()
-        elif self.l.token_atual == enumTkn.tkn_sub:
-            self.consome(enumTkn.tkn_sub)
-            self.mult()
-            self.restoAdd()
-        else:
-            return True
+            leftValue, listaComandos, resultado = self.mult()
+            novotemp = self.controle.geraTemp()
+            listaComandos.append((opr, novotemp, resultant, resultado))
+            leftValueb, listaComandosb, resultadob = self.restoAdd(novotemp)
+            listaComandos.extend(listaComandosb)
 
-        return False    
+            return False, listaComandos, resultadob
+
+        elif self.l.token_atual == enumTkn.tkn_sub:
+            opr = self.l.lexema
+            self.consome(enumTkn.tkn_sub)
+            leftValue, listaComandos, resultado = self.mult()
+            novotemp = self.controle.geraTemp()
+            listaComandos.append((opr, novotemp, resultant, resultado))
+            leftValueb, listaComandosb, resultadob = self.restoAdd(novotemp)
+            listaComandos.extend(listaComandosb)
+
+            return False, listaComandos, resultadob
+        else:
+            return True, [], resultant
 
     def mult(self):
         leftValue, listaComandos, resultado = self.uno()
-        leftValueb = self.restoMult()
+        leftValueb, listaComandosb, resultadob = self.restoMult(resultado)
+        listaComandos.extend(listaComandosb)
+        return leftValue and leftValueb, listaComandos, resultadob
 
-        return leftValue and leftValueb, listaComandos, resultado
-
-    def restoMult(self):
+    def restoMult(self, resultadoant):
+        opr = self.l.lexema
         if self.l.token_atual == enumTkn.tkn_mult:
             self.consome(enumTkn.tkn_mult)
-            self.uno()
-            self.restoMult()
+            leftValue, listaComandos, resultado = self.uno()
+            novoTemp = self.controle.geraTemp()
+            listaComandos.append((opr, novoTemp, resultadoant, resultado))
+            leftValueb, listaComandosb, resultadob = self.restoMult(novoTemp)
+
+            listaComandos.extend(listaComandosb)
+
         elif self.l.token_atual == enumTkn.tkn_div:
             self.consome(enumTkn.tkn_div)
-            self.uno()
-            self.restoMult()
+            leftValue, listaComandos, resultado = self.uno()
+            novoTemp = self.controle.geraTemp()
+            listaComandos.append((opr, novoTemp, resultadoant, resultado))
+            leftValueb, listaComandosb, resultadob = self.restoMult(novoTemp)
+            listaComandos.extend(listaComandosb)
+
         elif self.l.token_atual == enumTkn.tkn_mod:
             self.consome(enumTkn.tkn_mod)
-            self.uno()
-            self.restoMult()
+            leftValue, listaComandos, resultado = self.uno()
+            novoTemp = self.controle.geraTemp()
+            listaComandos.append((opr, novoTemp, resultadoant, resultado))
+            leftValueb, listaComandosb, resultadob = self.restoMult(novoTemp)
+            listaComandos.extend(listaComandosb)
         else:
-            return True
+            return True, [], resultadoant
 
-        return False
+        return False, listaComandos, resultadob
 
     def uno(self):
         if self.l.token_atual == enumTkn.tkn_add:
@@ -548,6 +590,7 @@ class sintatico(object):
             quad = ("+", novotemp, 0, res)
             novalista = lista + quad
             return (False, novalista, novotemp)
+
         elif self.l.token_atual == enumTkn.tkn_sub:
             self.consome(enumTkn.tkn_sub)
             (left, lista, res) = self.uno()
@@ -562,20 +605,22 @@ class sintatico(object):
     # (left, # lista de comandos, resultado dos comandos)
 
     def fator(self):
+        atual = self.l.lexema
         if self.l.token_atual == enumTkn.tkn_numFloat:
             self.consome(enumTkn.tkn_numFloat)
-            return (False, [], self.l.lexema)
+            return (False, [], atual)
         elif self.l.token_atual == enumTkn.tkn_var:
+
             self.consome(enumTkn.tkn_var)
-            return (True, [], self.l.lexema)
+            return (True, [], atual)
         elif self.l.token_atual == enumTkn.tkn_abrePar:
             self.consome(enumTkn.tkn_abrePar)
-            (left, lista, res) = self.atrib()
+            left, lista, res = self.atrib()
             self.consome(enumTkn.tkn_fechaPar)
             return (False, lista, res)
         else:
             self.consome(enumTkn.tkn_numInt)
-            return (False, [], self.l.lexema)
+            return (False, [], atual)
 
     def ifStmt(self):
         self.consome(enumTkn.tkn_if)
