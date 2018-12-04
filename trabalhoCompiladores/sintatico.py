@@ -10,7 +10,7 @@ from trabalhoCompiladores.Error import ErroSintatico, ErroSemantico
 class sintatico(object):
     """docstring for sintatico"""
     def __init__(self,arquivo):
-        super(sintatico, self).__init__()
+        # super(sintatico, self).__init__()
         #Variavel com o nome do arquivo
         self.arquivo = arquivo
         #Analisador lexico
@@ -39,6 +39,7 @@ class sintatico(object):
         lista_comandos.extend(self.bloco())
 
         arq.write(str(lista_comandos))
+        return lista_comandos
 
     def type(self):
         """
@@ -96,7 +97,7 @@ class sintatico(object):
 
         return lista_arg
 
-    def bloco(self,labelContinue=None,labelBreak=None):
+    def bloco(self, labelContinue=None, labelBreak=None):
         """
         <bloco> -> '{' <stmtList> '}' ;
         :return:
@@ -108,7 +109,7 @@ class sintatico(object):
 
         return lista
 
-    def stmtList(self,labelContinue=None,labelBreak=None):
+    def stmtList(self, labelContinue=None, labelBreak=None):
         """
         <stmtList> -> <stmt> <stmtList> | & ;
         :return:

@@ -70,10 +70,8 @@ class lexico(object):
         estado=1 
         string=''
         char=self.arquivo.get_char()
-        
 
         while True:
-
             #Estado inicial
             if(estado==1):
                 # tratamento de comentario
@@ -94,6 +92,8 @@ class lexico(object):
                                 self.aumentaLinha()
                         char = self.arquivo.get_char()
                         continue
+                    else:
+                        char = '/'
                 #Tratamento da virgula
                 if(char==','):
                     self.lexema=','

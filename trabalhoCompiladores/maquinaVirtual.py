@@ -5,7 +5,7 @@ import ast
 
 class maquinaVirtual(object):
     """docstring for sintatico"""
-    def __init__(self,lista):
+    def __init__(self, lista):
 
         #Variavel com o nome do arquivo
         self.lista = lista
@@ -19,7 +19,6 @@ class maquinaVirtual(object):
         for i in range(0,len(self.lista)):
             if(self.lista[i][0]=='LABEL'):
                 self.labels[self.lista[i][1]] = i
-
 
     def executacao(self):
         operadores = {
