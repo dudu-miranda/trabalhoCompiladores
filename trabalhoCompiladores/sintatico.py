@@ -10,18 +10,19 @@ from trabalhoCompiladores.Error import ErroSintatico
 class sintatico(object):
     """docstring for sintatico"""
     def __init__(self,arquivo):
-        # super(sintatico, self).__init__()
         #Variavel com o nome do arquivo
         self.arquivo = arquivo
         #Analisador lexico
         self.l = lexico(arquivo)
         self.controle = Controle()
+        self.__listaBLoco = []
+        # self.meucaminhobloco = []    # pilha ate o bloco atual
 
     def solve(self):
         try:
             return self.function()
         except ErroSintatico as e:
-            print(e)
+            exit(e)
 
     #Função de iniciar o programa
     def function(self):
@@ -31,6 +32,9 @@ class sintatico(object):
         """
 
         arq = open('saida.txt', "w")
+
+        meubloco = self.controle.gerabloco()
+        self.__listaBLoco.append(meubloco)
 
         lista_comandos = []
         self.consome(0)
@@ -44,6 +48,8 @@ class sintatico(object):
         lista_comandos.extend(self.bloco())
 
         arq.write(str(lista_comandos))
+
+        self.__listaBLoco.remove(meubloco)
         return lista_comandos
 
     def type(self):
@@ -51,6 +57,7 @@ class sintatico(object):
         Verifica o tipo do token
         :return: token
         """
+
         tipo = self.l.token_atual
         if self.l.token_atual == enumTkn.tkn_int:
             self.consome(enumTkn.tkn_int)
@@ -78,11 +85,11 @@ class sintatico(object):
 
         tipo = self.type()
         variavel = self.l.lexema
-
         self.consome(enumTkn.tkn_var)
         if not self.controle.add_simbolo(variavel, tipo):
             msg = "Variavel redeclarada"
             raise ErroSintatico((self.l.linha, self.l.coluna), msg)
+
         if tipo == enumTkn.tkn_int:
             atrib = ('=', variavel, 0, None)
         else:
@@ -102,19 +109,25 @@ class sintatico(object):
 
         return lista_arg
 
-    def bloco(self, labelContinue=None, labelBreak=None):
+    def bloco(self, labelContinue = None, labelBreak = None):
         """
         <bloco> -> '{' <stmtList> '}' ;
         :return:
         """
+        # definindo em qual bloco estou
+
+
         lista = []
         self.consome(enumTkn.tkn_abreCha)
-        lista.extend(self.stmtList(labelContinue,labelBreak))
+        lista.extend(self.stmtList(labelContinue, labelBreak))
         self.consome(enumTkn.tkn_fechaCha)
+
+        # saindo do bloco
+
 
         return lista
 
-    def stmtList(self, labelContinue=None, labelBreak=None):
+    def stmtList(self, labelContinue = None, labelBreak = None):
         """
         <stmtList> -> <stmt> <stmtList> | <declaration> | & ;
         :return:
@@ -136,12 +149,14 @@ class sintatico(object):
 
         return listaDeBlocos
 
-    def stmt(self,labelContinue=None,labelBreak=None):
+    def stmt(self, labelContinue = None, labelBreak=None):
         """
         <stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <expr> ';' | <ifStmt> | <bloco> | 'break' | 'continue' | ';' ;
 
         :return:
         """
+        meubloco = self.controle.gerabloco()
+        self.__listaBLoco.append(meubloco)
         lista = []
         if self.l.token_atual in [enumTkn.tkn_in, enumTkn.tkn_out]:
             lista.extend(self.ioStmt())
@@ -162,27 +177,28 @@ class sintatico(object):
             lista.extend(self.ifStmt())
 
         elif self.l.token_atual == enumTkn.tkn_abreCha:
-            lista.extend(self.bloco(labelContinue,labelBreak))
+            lista.extend(self.bloco(labelContinue, labelBreak))
 
         elif self.l.token_atual == enumTkn.tkn_break:
             self.consome(enumTkn.tkn_break)
 
-            lista.append(('JUMP',labelBreak,None,None))
+            lista.append(('JUMP', labelBreak, None, None))
 
         elif self.l.token_atual == enumTkn.tkn_continue:
             self.consome(enumTkn.tkn_continue)
 
-            lista.append(('JUMP',labelContinue,None,None))
+            lista.append(('JUMP', labelContinue, None, None))
 
         elif self.l.token_atual == enumTkn.tkn_return:
             self.consome(enumTkn.tkn_return)
             self.fator()
-            lista.append(('CALL','STOP',None,None))
+            lista.append(('CALL', 'STOP', None, None))
             self.consome(enumTkn.tkn_ptVirg)
 
         else:
             self.consome(enumTkn.tkn_ptVirg)
 
+        self.__listaBLoco.remove(meubloco)
         return lista
 
     def ioStmt(self):
@@ -190,7 +206,9 @@ class sintatico(object):
         <ioStmt> -> 'scan' '(' 'IDENT' ')' ';'  | 'print' '(' <outList> ')' ';' ;
         :return:
         """
+
         listaCmd = []
+
         if self.l.token_atual == enumTkn.tkn_in:
             self.consome(enumTkn.tkn_in)
             self.consome(enumTkn.tkn_abrePar)
@@ -200,12 +218,13 @@ class sintatico(object):
             self.consome(enumTkn.tkn_virg)
             
             variavelEntrada = self.l.lexema
+            verifica = self.controle.verifica_simbolo(variavelEntrada, self.__listaBLoco)
 
-            if not self.controle.verifica_simbolo(variavelEntrada):
-                msg = "Variavel %s não foi declarada." %variavelEntrada
+            if not verifica:
+                msg = "Variavel %s não foi declarada." % variavelEntrada
                 raise ErroSintatico((self.l.linha, self.l.coluna), msg)
 
-            listaCmd.append(('CALL', 'SCAN', None, variavelEntrada))
+            listaCmd.append(('CALL', 'SCAN', None, variavelEntrada+verifica))
             self.consome(enumTkn.tkn_var)
             self.consome(enumTkn.tkn_fechaPar)
             self.consome(enumTkn.tkn_ptVirg)
@@ -223,6 +242,7 @@ class sintatico(object):
         <outList> -> <out> <restoOutList> ;   
         :return:
         """
+
         listaSaida = []
         listaSaida.append(self.out())
         listaSaida.extend(self.restoOutList())
@@ -243,14 +263,14 @@ class sintatico(object):
             self.consome(enumTkn.tkn_numFloat)
         else:
             self.consome(enumTkn.tkn_var)
-
-            if not self.controle.verifica_simbolo(coisaPraPrintar):
-                msg = "Variavel %s não foi declarada." %coisaPraPrintar
+            verifica = self.controle.verifica_simbolo(coisaPraPrintar, self.__listaBLoco)
+            if not verifica:
+                msg = "Variavel %s não foi declarada." % coisaPraPrintar
                 raise ErroSintatico((self.l.linha, self.l.coluna), msg)
             
-            return ('CALL','PRINT',None,coisaPraPrintar)
+            return ('CALL','PRINT',None,coisaPraPrintar + verifica)
 
-        return ('CALL','PRINT',coisaPraPrintar,None)
+        return ('CALL', 'PRINT', coisaPraPrintar, None)
 
     def restoOutList(self):
         """
@@ -288,7 +308,7 @@ class sintatico(object):
         listaopr, variavelR = self.optexpr()
         lista.extend(listaopr) # calculo de fato adicionado ao comando
         if(variavelR != None):
-        	lista.append(("IF", variavelR, labelinicio, labelfim))
+            lista.append(("IF", variavelR, labelinicio, labelfim))
         
         self.consome(enumTkn.tkn_ptVirg)
 
@@ -331,7 +351,7 @@ class sintatico(object):
         lista.append(('LABEL',labelExpressao,None,None))
 
         #Pega o codigo que calcula a expressao de saida do while pela primeira vez
-        listaExpressao,res = self.expr()
+        listaExpressao, res = self.expr()
         lista.extend(listaExpressao)
         
         #Faz um if pra primeira vez que caso a expressao seja falsa ele vai para a saida caso contrario ele continua no codigo do bloco
@@ -617,14 +637,19 @@ class sintatico(object):
             self.consome(enumTkn.tkn_numFloat)
             return (False, [], atual)
         elif self.l.token_atual == enumTkn.tkn_var:
-
+            verifica = self.controle.verifica_simbolo(atual, self.__listaBLoco)
+            if not verifica:
+                msg = "Variavel %s não foi declarada." % atual
+                raise ErroSintatico((self.l.linha, self.l.coluna), msg)
             self.consome(enumTkn.tkn_var)
-            return (True, [], atual)
+            return (True, [], atual+verifica)
+
         elif self.l.token_atual == enumTkn.tkn_abrePar:
             self.consome(enumTkn.tkn_abrePar)
             left, lista, res = self.atrib()
             self.consome(enumTkn.tkn_fechaPar)
             return (False, lista, res)
+
         else:
             self.consome(enumTkn.tkn_numInt)
             return (False, [], atual)
@@ -673,13 +698,13 @@ class sintatico(object):
 
         for variavel in temp2:
 
-            if not self.controle.add_simbolo(variavel, tipo):
+            if not self.controle.add_simbolo(variavel, tipo, self.__listaBLoco[-1]):
                 msg = "Variavel "+variavel+" redeclarada"
                 raise ErroSintatico((self.l.linha, self.l.coluna), msg)
             if tipo == enumTkn.tkn_int:
-                atrib = ('=', variavel, 0, None)
+                atrib = ('=', variavel + self.__listaBLoco[-1], 0, None)
             else:
-                atrib = ('=', variavel, 0.0, None)
+                atrib = ('=', variavel + self.__listaBLoco[-1], 0.0, None)
 
             lista.append(atrib)
 

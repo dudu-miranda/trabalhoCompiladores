@@ -44,3 +44,20 @@ class ErroSemantico(Error):
         erro += '\n'
         erro += self.msg
         return erro
+
+
+class ErroExecucao(Error):
+    """
+    Exceções levantadas por erros de execucao
+    msg -- explicação do erro
+    """
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        vermelho = '\033[31m'
+        original = '\033[0;0m'
+        erro = vermelho + "Erro de Execução: "
+        erro += original
+        erro += self.msg
+        return erro

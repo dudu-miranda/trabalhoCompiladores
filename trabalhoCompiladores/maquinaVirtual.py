@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import ast
-from trabalhoCompiladores.Error import  ErroSemantico
+from trabalhoCompiladores.Error import ErroExecucao
 
 
 class maquinaVirtual(object):
@@ -19,8 +19,8 @@ class maquinaVirtual(object):
         self.setaLabels()
         try:
             self.executacao()
-        except ErroSemantico as e:
-            print(e)
+        except ErroExecucao as e:
+            exit(e)
 
     def setaLabels(self):
 
@@ -68,7 +68,7 @@ class maquinaVirtual(object):
                 continue
 
             elif self.lista[i][0] != 'CALL':
-                #Seta 'a' e 'b' variavel temporaria como um numero da lista ou variavel da lista
+                #  Seta 'a' e 'b' variavel temporaria como um numero da lista ou variavel da lista
                 a, b= 0, 0
                 funcao = operadores[self.lista[i][0]]
 
@@ -104,7 +104,7 @@ class maquinaVirtual(object):
     def divisao(self, x, y):
         if y == 0:
             msg = "Divisão por zero."
-            raise ErroSemantico(msg)
+            raise ErroExecucao(msg)
         return x / y
 
     def mult(self, x, y):
@@ -113,13 +113,13 @@ class maquinaVirtual(object):
     def mod(self, x, y):
         if y == 0:
             msg = "Divisão por zero."
-            raise ErroSemantico(msg)
+            raise ErroExecucao(msg)
         return x % y
 
     def div(self, x, y):
         if y == 0:
             msg = "Divisão por zero."
-            raise ErroSemantico(msg)
+            raise ErroExecucao(msg)
         return x // y
 
     def atrib(self, x, y):
@@ -172,13 +172,3 @@ class maquinaVirtual(object):
 
     def funcJUMP(self,indice, lab1, lab2):
         return self.labels[indice]
-
-
-if __name__ == '__main__':
-    arquivo = open("teste", 'r')
-    lista = ast.literal_eval(arquivo.read())
-
-    m = maquinaVirtual(lista)
-    m.setaLabels()
-    #print(lista)
-    m.executacao()
