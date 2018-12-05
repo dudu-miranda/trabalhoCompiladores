@@ -156,6 +156,7 @@ class maquinaVirtual(object):
         if x is not None:
             print(x, end='')
         y = float(input(""))
+
         return y
 
     def printa(self, x, y):
