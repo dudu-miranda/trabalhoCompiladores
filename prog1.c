@@ -1,5 +1,6 @@
 int main() {
 	
+	/*
 	int n;
 	int teste;
 	n = 9 * 5 + (-3.5);
@@ -26,13 +27,28 @@ int main() {
 			teste = 0;
 		}
 		else{
-			i++;
+			i=1;
 		}
 	}
     
-    n = teste * (6 + (-3)) / 9;
+    n = teste * (6 + (-3)) + 9;
     print(n);
     print(teste);
+    */
+
+	int n,k,j,u;
+	k=1;
+	u=2;
+	if(1==1){
+		int a;
+	}
+	
+    if (n==2){
+    	if(k==1)
+    		print(u);
+    }
+    else
+    	print(j);
 
     return 0;
 }

@@ -116,7 +116,7 @@ class sintatico(object):
 
     def stmtList(self, labelContinue=None, labelBreak=None):
         """
-        <stmtList> -> <stmt> <stmtList> | & ;
+        <stmtList> -> <stmt> <stmtList> | <declaration> | & ;
         :return:
         """
         listaDeBlocos = []
@@ -126,7 +126,11 @@ class sintatico(object):
         enumTkn.tkn_numFloat, enumTkn.tkn_numInt, enumTkn.tkn_for, enumTkn.tkn_if, enumTkn.tkn_in, enumTkn.tkn_out,
         enumTkn.tkn_while, enumTkn.tkn_abreCha]
 
-        if self.l.token_atual in lista:
+        if self.l.token_atual in [enumTkn.tkn_int, enumTkn.tkn_float]:
+            listaDeBlocos.extend(self.declaration())
+            listaDeBlocos.extend(self.stmtList(labelContinue,labelBreak))
+
+        elif self.l.token_atual in lista:
             listaDeBlocos.extend(self.stmt(labelContinue,labelBreak))
             listaDeBlocos.extend(self.stmtList(labelContinue,labelBreak))
 
@@ -134,8 +138,7 @@ class sintatico(object):
 
     def stmt(self,labelContinue=None,labelBreak=None):
         """
-        <stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <expr> ';' | <ifStmt> | <bloco> | 'break' | 'continue'
-                 | <declaration> | ';' ;
+        <stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <expr> ';' | <ifStmt> | <bloco> | 'break' | 'continue' | ';' ;
 
         :return:
         """
@@ -170,9 +173,6 @@ class sintatico(object):
             self.consome(enumTkn.tkn_continue)
 
             lista.append(('JUMP',labelContinue,None,None))
-
-        elif self.l.token_atual in [enumTkn.tkn_int, enumTkn.tkn_float]:
-            lista.extend(self.declaration())
 
         elif self.l.token_atual == enumTkn.tkn_return:
             self.consome(enumTkn.tkn_return)
@@ -282,12 +282,14 @@ class sintatico(object):
         lista.extend(listaopr)
 
         self.consome(enumTkn.tkn_ptVirg)
-
+        
         # calculo da expressao
         lista.append(('LABEL', labelexp, None, None))
         listaopr, variavelR = self.optexpr()
         lista.extend(listaopr) # calculo de fato adicionado ao comando
-        lista.append(("IF", variavelR, labelinicio, labelfim))
+        if(variavelR != None):
+        	lista.append(("IF", variavelR, labelinicio, labelfim))
+        
         self.consome(enumTkn.tkn_ptVirg)
 
         # a operacao e feita ao final do stmt
