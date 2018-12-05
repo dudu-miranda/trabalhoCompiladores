@@ -9,5 +9,4 @@ sint=sintatico('prog1.c')
 prog = sint.solve()
 
 maquina = maquinaVirtual(prog)
-maquina.setaLabels()
-maquina.executacao()
+maquina.ligar()

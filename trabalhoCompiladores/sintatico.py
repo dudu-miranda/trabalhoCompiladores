@@ -4,7 +4,7 @@
 from trabalhoCompiladores.lexico import *
 from trabalhoCompiladores.enumTkn import enumTkn
 from trabalhoCompiladores.Controle import Controle
-from trabalhoCompiladores.Error import ErroSintatico, ErroSemantico
+from trabalhoCompiladores.Error import ErroSintatico
 
 
 class sintatico(object):

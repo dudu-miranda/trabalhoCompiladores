@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import ast
-from copy import deepcopy
+from trabalhoCompiladores.Error import  ErroSemantico
+
 
 class maquinaVirtual(object):
     """docstring for sintatico"""
@@ -13,6 +14,13 @@ class maquinaVirtual(object):
         self.labels = {}
 
         self.tabSimbolos = {}
+
+    def ligar(self):
+        self.setaLabels()
+        try:
+            self.executacao()
+        except ErroSemantico as e:
+            print(e)
 
     def setaLabels(self):
 
@@ -94,15 +102,24 @@ class maquinaVirtual(object):
         return x - y
 
     def divisao(self, x, y):
+        if y == 0:
+            msg = "Divisão por zero."
+            raise ErroSemantico(msg)
         return x / y
 
     def mult(self, x, y):
         return x * y
 
     def mod(self, x, y):
+        if y == 0:
+            msg = "Divisão por zero."
+            raise ErroSemantico(msg)
         return x % y
 
     def div(self, x, y):
+        if y == 0:
+            msg = "Divisão por zero."
+            raise ErroSemantico(msg)
         return x // y
 
     def atrib(self, x, y):
