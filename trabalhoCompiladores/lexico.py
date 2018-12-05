@@ -14,7 +14,6 @@ class lexico(object):
         """
         file:nome do arquivo com o codigo fonte
         """
-        super(lexico, self).__init__()
         #Expressão regular dos numeros
         self.er_num = re.compile(r'[0-9]')
         #Expressão regular das letras

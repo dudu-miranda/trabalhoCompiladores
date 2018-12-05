@@ -16,7 +16,12 @@ class sintatico(object):
         #Analisador lexico
         self.l = lexico(arquivo)
         self.controle = Controle()
-        self.function()
+
+    def solve(self):
+        try:
+            return self.function()
+        except ErroSintatico as e:
+            print(e)
 
     #Função de iniciar o programa
     def function(self):
@@ -25,7 +30,7 @@ class sintatico(object):
         :return:
         """
 
-        arq = open('saida.txt',"w")
+        arq = open('saida.txt', "w")
 
         lista_comandos = []
         self.consome(0)

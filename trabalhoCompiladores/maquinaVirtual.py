@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import ast
-
+from copy import deepcopy
 
 class maquinaVirtual(object):
     """docstring for sintatico"""
@@ -16,7 +16,7 @@ class maquinaVirtual(object):
 
     def setaLabels(self):
 
-        for i in range(0,len(self.lista)):
+        for i in range(0, len(self.lista)):
             if(self.lista[i][0]=='LABEL'):
                 self.labels[self.lista[i][1]] = i
 
@@ -47,41 +47,45 @@ class maquinaVirtual(object):
             "IF": self.funcIF,
             "JUMP": self.funcJUMP
         }
-        i=0
-        while self.lista[i][1]!='STOP':
+        i = 0
+        while self.lista[i][1] != 'STOP':
 
-            if(self.lista[i][0]=='LABEL'):
+            if self.lista[i][0] == 'LABEL':
                 i += 1
                 continue
 
-            elif self.lista[i][0] =='IF' or self.lista[i][0] =='JUMP':
+            elif self.lista[i][0] == 'IF' or self.lista[i][0] == 'JUMP':
                 funcao = saltos[self.lista[i][0]]
-                i = funcao(self.lista[i][1],self.lista[i][2],self.lista[i][3])
+                i = funcao(self.lista[i][1], self.lista[i][2], self.lista[i][3])
                 continue
 
-            elif self.lista[i][0] !='CALL':
+            elif self.lista[i][0] != 'CALL':
                 #Seta 'a' e 'b' variavel temporaria como um numero da lista ou variavel da lista
-                a,b=0,0
+                a, b= 0, 0
                 funcao = operadores[self.lista[i][0]]
-                #print(funcao)
-                if(type(self.lista[i][2])==int or type(self.lista[i][2])==float):
-                    a=self.lista[i][2]
-                else:
-                    a=self.tabSimbolos[self.lista[i][2]]
 
-                if(type(self.lista[i][3])==int or type(self.lista[i][3])==float):
-                    b=self.lista[i][3]
-                else:
-                    b = self.tabSimbolos[self.lista[i][3]]
-                
+
+                try:
+                    a = float(self.lista[i][2])
+                except:
+                    a = self.tabSimbolos[self.lista[i][2]]
+
+                try:
+                    b = float(self.lista[i][3])
+                except:
+                    if self.lista[i][0] != '=':
+                        b = self.tabSimbolos[self.lista[i][3]]
+
                 self.tabSimbolos[self.lista[i][1]] = funcao(a, b)
 
             else:
                 funcao = chamadas[self.lista[i][1]]
-                #print(funcao)
-                self.tabSimbolos[self.lista[i][3]] = funcao( self.lista[i][2], self.lista[i][3])
+                if self.lista[i][1] == 'SCAN':
+                    self.tabSimbolos[self.lista[i][3]] = funcao(self.lista[i][2], self.lista[i][3])
+                else:
+                    funcao(self.lista[i][2], self.lista[i][3])
 
-            i+=1
+            i += 1
 
     def soma(self, x, y):
         return x + y
@@ -102,7 +106,7 @@ class maquinaVirtual(object):
         return x // y
 
     def atrib(self, x, y):
-        return y
+        return x
 
     def maiorI(self, x, y):
         return x >= y
@@ -131,13 +135,11 @@ class maquinaVirtual(object):
     def funcNOT(self, x, y):
         return not y
 
-    def igualdade(self, x, y):
-        return x == y
-
     def scan(self, x, y):
         if x is not None:
-            print(x)
-        return float(input(""))
+            print(x, end='')
+        y = float(input(""))
+        return y
 
     def printa(self, x, y):
         if x is not None:
@@ -145,14 +147,13 @@ class maquinaVirtual(object):
         if y is not None:
             print(self.tabSimbolos[y])
 
-    def funcIF(self,exp,lab1,lab2):
-        print(exp)
-        if(exp):
+    def funcIF(self, exp, lab1, lab2):
+        if self.tabSimbolos[exp]:
             return self.labels[lab1]
         else:
             return self.labels[lab2]
 
-    def funcJUMP(self,indice,lab1,lab2):
+    def funcJUMP(self,indice, lab1, lab2):
         return self.labels[indice]
 
 
