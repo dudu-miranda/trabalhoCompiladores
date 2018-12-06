@@ -44,8 +44,10 @@ int main() {
 	}
 	
     if (n==2){
-    	if(k==1)
+    	if(k==1){
+    		int a;
     		print(u);
+    	}
     }
     else
     	print(j);

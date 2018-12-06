@@ -155,8 +155,7 @@ class sintatico(object):
 
         :return:
         """
-        meubloco = self.controle.gerabloco()
-        self.__listaBLoco.append(meubloco)
+        
         lista = []
         if self.l.token_atual in [enumTkn.tkn_in, enumTkn.tkn_out]:
             lista.extend(self.ioStmt())
@@ -177,7 +176,10 @@ class sintatico(object):
             lista.extend(self.ifStmt())
 
         elif self.l.token_atual == enumTkn.tkn_abreCha:
+            meubloco = self.controle.gerabloco()
+            self.__listaBLoco.append(meubloco)
             lista.extend(self.bloco(labelContinue, labelBreak))
+            self.__listaBLoco.remove(meubloco)
 
         elif self.l.token_atual == enumTkn.tkn_break:
             self.consome(enumTkn.tkn_break)
@@ -198,7 +200,7 @@ class sintatico(object):
         else:
             self.consome(enumTkn.tkn_ptVirg)
 
-        self.__listaBLoco.remove(meubloco)
+        
         return lista
 
     def ioStmt(self):
