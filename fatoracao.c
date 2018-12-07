@@ -1,0 +1,23 @@
+int main() {
+
+	/*Arquivo funcionando perfeitamente como deveria*/
+
+	int num, div, resto;
+	scan("Entre com o inteiro: ", num);
+	print(num, " = ");
+
+
+	while (num > 1) {
+
+		for (div = 2; num % div; div = div + 1);
+		print(div);
+		num = num / div;
+		
+		if (num > 1)
+			print(" * ");
+
+	}
+
+	print("\n");
+	return 0;
+} 

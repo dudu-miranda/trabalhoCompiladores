@@ -302,6 +302,8 @@ class lexico(object):
 
                         if(self.arquivo.get_char() == 'n'):
                             string += '\n'
+                        elif(self.arquivo.get_char() == 't'):
+                            string += '\t'
                         else:
                             string+=char
                             string+=self.arquivo.get_char()

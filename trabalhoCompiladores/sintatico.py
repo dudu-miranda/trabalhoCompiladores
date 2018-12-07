@@ -299,30 +299,36 @@ class sintatico(object):
         labelexp = self.controle.geraLabel()
         labelinicio = self.controle.geraLabel()
         labelfim = self.controle.geraLabel()
+        labelIncremento = self.controle.geraLabel()
 
         self.consome(enumTkn.tkn_for)
         self.consome(enumTkn.tkn_abrePar)
-        listaopr, variavelR = self.optexpr()
-        lista.extend(listaopr)
-
+        listaInicializacao, variavelR = self.optexpr()
         self.consome(enumTkn.tkn_ptVirg)
-        
+
         # calculo da expressao
-        lista.append(('LABEL', labelexp, None, None))
-        listaopr, variavelR = self.optexpr()
-        lista.extend(listaopr) # calculo de fato adicionado ao comando
-        if(variavelR != None):
-            lista.append(("IF", variavelR, labelinicio, labelfim))
-        
+        listaopr, variavelSaida = self.optexpr()
         self.consome(enumTkn.tkn_ptVirg)
 
-        # a operacao e feita ao final do stmt
+        # a operacao e feita ao final do stmt (Normalmente incremento)
         listaINC, variavelR = self.optexpr()
         self.consome(enumTkn.tkn_fechaPar)
 
-        lista.append(('LABEL', labelinicio, None, None))
-        lista.extend(self.stmt(labelexp,labelfim))
 
+        lista.extend(listaInicializacao)        
+        
+        lista.append(('LABEL', labelexp, None, None))
+
+        #Calculo da saida do laço de fato adicionado ao comando 
+        lista.extend(listaopr) 
+        if(variavelSaida != None):
+            lista.append(("IF", variavelSaida, labelinicio, labelfim))
+
+        lista.append(('LABEL', labelinicio, None, None))
+        lista.extend(self.stmt(labelIncremento,labelfim))
+
+        #Adiciona-se a label de incremento para o continue ser direcionado para esta label
+        lista.append(('LABEL', labelIncremento, None, None))
         lista.extend(listaINC)     # adicionando o calculo do incremento
 
         lista.append(('JUMP', labelexp, None, None))    # volta verificacao
