@@ -4,7 +4,13 @@ from trabalhoCompiladores.sintatico import sintatico
 from trabalhoCompiladores.maquinaVirtual import maquinaVirtual
 
 
+#sint=sintatico('pExpressoesBasicas.c')
+#sint=sintatico('pBlocos.c')
+#sint=sintatico('pBlocos.c')
+#sint=sintatico('pBlocos.c')
+
 sint=sintatico('prog1.c')
+
 
 prog = sint.solve()
 

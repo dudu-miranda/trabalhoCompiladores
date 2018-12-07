@@ -57,6 +57,7 @@ class maquinaVirtual(object):
         }
         i = 0
         while self.lista[i][1] != 'STOP':
+            #print(self.lista[i])
 
             if self.lista[i][0] == 'LABEL':
                 i += 1
@@ -150,7 +151,7 @@ class maquinaVirtual(object):
         return x or y
 
     def funcNOT(self, x, y):
-        return not y
+        return not x 
 
     def scan(self, x, y):
         if x is not None:
@@ -161,9 +162,9 @@ class maquinaVirtual(object):
 
     def printa(self, x, y):
         if x is not None:
-            print(str(x))
+            print(str(x),end="")
         if y is not None:
-            print(self.tabSimbolos[y])
+            print(self.tabSimbolos[y],end="")
 
     def funcIF(self, exp, lab1, lab2):
         if self.tabSimbolos[exp]:

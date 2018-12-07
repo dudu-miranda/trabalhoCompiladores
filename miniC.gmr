@@ -32,14 +32,17 @@
 # comando for
 <forStmt> -> 'for' '(' <optExpr> ';' <optExpr> ';' <optExpr> ')' <stmt> ;
 <optExpr> -> <expr> | & ;
+
 # comandos de IO
 <ioStmt> -> 'scan' '(' 'IDENT' ')' ';' 
           | 'print' '(' <outList> ')' ';' ;
 <outList> -> <out> <restoOutList> ;         
 <out> -> 'STR' | 'IDENT' | 'NUMint' | 'NUMfloat' ;
 <restoOutList> -> ',' <out> <restoOutList> | & ;
+
 # comando while
 <whileStmt> -> 'while' '(' <expr> ')' <stmt> ;
+
 # comando if
 <ifStmt> -> 'if' '(' <expr> ')' <stmt> <elsePart> ;
 <elsePart> -> 'else' <stmt> | & ;

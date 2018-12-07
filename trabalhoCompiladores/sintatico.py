@@ -45,7 +45,7 @@ class sintatico(object):
         lista_comandos.extend(self.argList())
         self.consome(enumTkn.tkn_fechaPar)
         
-        lista_comandos.extend(self.bloco())
+        lista_comandos.extend(self.bloco(None, None))
 
         arq.write(str(lista_comandos))
 
@@ -109,7 +109,7 @@ class sintatico(object):
 
         return lista_arg
 
-    def bloco(self, labelContinue = None, labelBreak = None):
+    def bloco(self, labelContinue, labelBreak):
         """
         <bloco> -> '{' <stmtList> '}' ;
         :return:
@@ -127,7 +127,7 @@ class sintatico(object):
 
         return lista
 
-    def stmtList(self, labelContinue = None, labelBreak = None):
+    def stmtList(self, labelContinue, labelBreak):
         """
         <stmtList> -> <stmt> <stmtList> | <declaration> | & ;
         :return:
@@ -149,7 +149,7 @@ class sintatico(object):
 
         return listaDeBlocos
 
-    def stmt(self, labelContinue = None, labelBreak=None):
+    def stmt(self, labelContinue, labelBreak):
         """
         <stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <expr> ';' | <ifStmt> | <bloco> | 'break' | 'continue' | ';' ;
 
@@ -173,7 +173,7 @@ class sintatico(object):
             self.consome(enumTkn.tkn_ptVirg)
 
         elif self.l.token_atual == enumTkn.tkn_if:
-            lista.extend(self.ifStmt())
+            lista.extend(self.ifStmt(labelContinue,labelBreak))
 
         elif self.l.token_atual == enumTkn.tkn_abreCha:
             meubloco = self.controle.gerabloco()
@@ -183,11 +183,13 @@ class sintatico(object):
 
         elif self.l.token_atual == enumTkn.tkn_break:
             self.consome(enumTkn.tkn_break)
+            self.consome(enumTkn.tkn_ptVirg)
 
             lista.append(('JUMP', labelBreak, None, None))
 
         elif self.l.token_atual == enumTkn.tkn_continue:
             self.consome(enumTkn.tkn_continue)
+            self.consome(enumTkn.tkn_ptVirg)
 
             lista.append(('JUMP', labelContinue, None, None))
 
@@ -319,7 +321,7 @@ class sintatico(object):
         self.consome(enumTkn.tkn_fechaPar)
 
         lista.append(('LABEL', labelinicio, None, None))
-        lista.extend(self.stmt())
+        lista.extend(self.stmt(labelexp,labelfim))
 
         lista.extend(listaINC)     # adicionando o calculo do incremento
 
@@ -656,7 +658,7 @@ class sintatico(object):
             self.consome(enumTkn.tkn_numInt)
             return (False, [], atual)
 
-    def ifStmt(self):
+    def ifStmt(self, labelContinue , labelBreak ):
 
         lista = []
 
@@ -671,8 +673,8 @@ class sintatico(object):
         labelAposExpressao = self.controle.geraLabel()
         falsidade = self.controle.geraLabel()
 
-        blocoIF = self.stmt()
-        blocoElse = self.elsepart()
+        blocoIF = self.stmt(labelContinue, labelBreak)
+        blocoElse = self.elsepart(labelContinue, labelBreak)
 
         lista.extend(lstExpr)
         lista.append(("IF",result,labelAposExpressao,falsidade))
@@ -685,11 +687,11 @@ class sintatico(object):
 
         return lista
 
-    def elsepart(self):
+    def elsepart(self, labelContinue, labelBreak):
         lista = []
         if self.l.token_atual == enumTkn.tkn_else:
             self.consome(enumTkn.tkn_else)
-            lista.extend(self.stmt())
+            lista.extend(self.stmt(labelContinue, labelBreak))
 
         return lista
 

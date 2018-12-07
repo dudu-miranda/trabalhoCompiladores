@@ -1,56 +1,41 @@
 int main() {
 	
-	/*
 	int n;
 	int teste;
 	n = 9 * 5 + (-3.5);
-	print(n);
+	print(n, "\n");
 
 	if(n == 5) {
-		print("Hmm");
+		print("Hmm\n");
 	} else {
-		print("Dois");
+		print("Dois\n");
 	}
 
     scan("Teste = ", teste);
-    print(teste);
+    print(teste, "\n");
 
 	int i;
 	i = 0;
 	while(i < teste) {
-		print("Print", i);
+		print(i, "\n");
 		i = i + 1;
 	}
 
 	for(i = 0; i < 10; i = i + 1) {
-		if(i > 5){
+		if(i > 5)
 			teste = 0;
-		}
-		else{
-			i=1;
-		}
+		else
+			if(i == 3)
+				break;
+			
+			else
+				print(i, "\n");
+
 	}
     
-    n = teste * (6 + (-3)) + 9;
-    print(n);
-    print(teste);
-    */
-
-	int n,k,j,u;
-	k=1;
-	u=2;
-	if(1==1){
-		int a;
-	}
-	
-    if (n==2){
-    	if(k==1){
-    		int a;
-    		print(u);
-    	}
-    }
-    else
-    	print(j);
+    n = teste * (6 + (-3)) / 9;
+    print(n, "\n");
+    print(teste, "\n");
 
     return 0;
 }

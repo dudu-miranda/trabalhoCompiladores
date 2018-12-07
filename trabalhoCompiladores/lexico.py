@@ -299,8 +299,12 @@ class lexico(object):
             elif(estado==5):
                 if(char!='\"'):
                     if(char == '\\'):
-                        string+=char
-                        string+=self.arquivo.get_char()
+
+                        if(self.arquivo.get_char() == 'n'):
+                            string += '\n'
+                        else:
+                            string+=char
+                            string+=self.arquivo.get_char()
                     else:
                         string+=char
                 else:
