@@ -13,12 +13,12 @@ int main() {
 	i = -+-+-1; 
 	j = 4 / 3;
 	k = 5 % 3;
+	e = !1;
 
 	/*
-	e = !1;
 	Problemas com os comentarios do tipo \\ que não estao sendo aceitos nao sei porque
-	Problemas com o not em algum lugar do sintatico imagino
 	E problemas com o print na maquina virtual que sempre da um \n como padrão do python
+	PS: Problemas com o not corrigido em algum lugar da maquina virtual
 	PS: Arrumado o problema da maquina virtual que nao da mais print \n deliberadamente.
 	PS: Arrumado problema com o lexico que não adicionava o \n como um \n propiamente dito e sim uma '\' e um 'n'.
 	*/

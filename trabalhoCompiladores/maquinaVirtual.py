@@ -82,7 +82,7 @@ class maquinaVirtual(object):
                 try:
                     b = float(self.lista[i][3])
                 except:
-                    if self.lista[i][0] != '=':
+                    if self.lista[i][0] != '=' and self.lista[i][0] != '!':
                         b = self.tabSimbolos[self.lista[i][3]]
 
                 self.tabSimbolos[self.lista[i][1]] = funcao(a, b)

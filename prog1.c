@@ -1,5 +1,8 @@
 int main() {
 	
+	/*Arquivo completamente validado.
+	Está executando exatamente como deveria*/
+
 	int n;
 	int teste;
 	n = 9 * 5 + (-3.5);
@@ -26,11 +29,9 @@ int main() {
 			teste = 0;
 		else
 			if(i == 3)
-				break;
-			
+				break;		
 			else
 				print(i, "\n");
-
 	}
     
     n = teste * (6 + (-3)) / 9;
